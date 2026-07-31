@@ -1,0 +1,6 @@
+{
+  "name": "Western Trust Bank",
+  "description": "Enterprise Demo Banking Application for Test Automation with Chaos Engineering, REST APIs, and Stable Selenium Locators",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
