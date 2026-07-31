@@ -4,11 +4,11 @@ import { Building2, ShieldCheck, Fingerprint, Lock, User, KeyRound, AlertCircle,
 import { DEMO_PERSONAS } from '../mockData';
 
 interface LoginModalProps {
-  onLoginSuccess: () => void;
+  onLoginSuccess?: () => void;
 }
 
 export const LoginModal: React.FC<LoginModalProps> = ({ onLoginSuccess }) => {
-  const { switchPersona, addToast, featureFlags } = useBank();
+  const { switchPersona, login, addToast, featureFlags } = useBank();
   const [username, setUsername] = useState('john.doe');
   const [password, setPassword] = useState('demo123');
   const [rememberMe, setRememberMe] = useState(true);
@@ -53,19 +53,18 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onLoginSuccess }) => {
       ([_, persona]) => persona.username.toLowerCase() === username.toLowerCase()
     );
 
-    if (foundPersona) {
-      switchPersona(foundPersona[0]);
-    } else {
-      switchPersona('customer');
-    }
+    const personaKey = foundPersona ? foundPersona[0] : 'customer';
+    login(personaKey);
 
     addToast({
       type: 'success',
       title: 'Authentication Successful',
-      message: 'Logged in to Western Trust Bank session.',
+      message: `Logged in to TestGrid Bank Demo as ${DEMO_PERSONAS[personaKey]?.name || 'User'}.`,
     });
 
-    onLoginSuccess();
+    if (onLoginSuccess) {
+      onLoginSuccess();
+    }
   };
 
   const handleQuickPersonaSelect = (key: string) => {
@@ -80,13 +79,19 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onLoginSuccess }) => {
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
-      switchPersona('customer');
+      const foundPersona = Object.entries(DEMO_PERSONAS).find(
+        ([_, persona]) => persona.username.toLowerCase() === username.toLowerCase()
+      );
+      const personaKey = foundPersona ? foundPersona[0] : 'customer';
+      login(personaKey);
       addToast({
         type: 'success',
         title: 'Biometric Login Verified',
-        message: 'Face ID / Touch ID authentication passed.',
+        message: `Face ID / Touch ID passed for ${DEMO_PERSONAS[personaKey]?.name || 'User'}.`,
       });
-      onLoginSuccess();
+      if (onLoginSuccess) {
+        onLoginSuccess();
+      }
     }, 800);
   };
 
@@ -107,10 +112,10 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onLoginSuccess }) => {
             <Building2 className="w-6 h-6 text-white" />
           </div>
           <h1 id="login-heading-title" data-testid="login-heading-title" className="text-xl font-bold tracking-tight text-white">
-            WESTERN TRUST BANK
+            TESTGRID BANK DEMO
           </h1>
           <p id="login-heading-subtitle" data-testid="login-heading-subtitle" className="text-xs text-blue-200 mt-0.5">
-            Enterprise Secure Portal for Test Automation Playground
+            Enterprise Banking Platform for Live Testing & Automation
           </p>
         </div>
 

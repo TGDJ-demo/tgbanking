@@ -271,6 +271,102 @@ export const TransfersView: React.FC = () => {
               </div>
             )}
 
+            {/* Transfer Speed Radio Selection */}
+            <div>
+              <label id="lbl-transfer-speed" data-testid="lbl-transfer-speed" className="block text-xs font-bold text-slate-700 mb-1.5">
+                Transfer Execution Speed & Processing Rail
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <label
+                  id="lbl-radio-speed-standard"
+                  data-testid="lbl-radio-speed-standard"
+                  className="p-2.5 bg-slate-50 border border-slate-300 rounded cursor-pointer flex items-start space-x-2 hover:bg-slate-100"
+                >
+                  <input
+                    id="radio-speed-standard"
+                    data-testid="radio-speed-standard"
+                    type="radio"
+                    name="transfer-speed"
+                    value="STANDARD_ACH"
+                    defaultChecked
+                    className="mt-0.5 text-[#002D72]"
+                  />
+                  <div>
+                    <span className="text-xs font-bold text-slate-900 block">Standard ACH</span>
+                    <span className="text-[10px] text-slate-500 block">2-3 Business Days • $0.00 Fee</span>
+                  </div>
+                </label>
+
+                <label
+                  id="lbl-radio-speed-wire"
+                  data-testid="lbl-radio-speed-wire"
+                  className="p-2.5 bg-slate-50 border border-slate-300 rounded cursor-pointer flex items-start space-x-2 hover:bg-slate-100"
+                >
+                  <input
+                    id="radio-speed-wire"
+                    data-testid="radio-speed-wire"
+                    type="radio"
+                    name="transfer-speed"
+                    value="INSTANT_WIRE"
+                    className="mt-0.5 text-[#002D72]"
+                  />
+                  <div>
+                    <span className="text-xs font-bold text-slate-900 block">Fedwire Same-Day</span>
+                    <span className="text-[10px] text-slate-500 block">Instant Real-Time • $15.00 Fee</span>
+                  </div>
+                </label>
+
+                <label
+                  id="lbl-radio-speed-rtp"
+                  data-testid="lbl-radio-speed-rtp"
+                  className="p-2.5 bg-slate-50 border border-slate-300 rounded cursor-pointer flex items-start space-x-2 hover:bg-slate-100"
+                >
+                  <input
+                    id="radio-speed-rtp"
+                    data-testid="radio-speed-rtp"
+                    type="radio"
+                    name="transfer-speed"
+                    value="RTP_PAYMENT"
+                    className="mt-0.5 text-[#002D72]"
+                  />
+                  <div>
+                    <span className="text-xs font-bold text-slate-900 block">RTP Instant</span>
+                    <span className="text-[10px] text-slate-500 block">24/7/365 Direct • $2.50 Fee</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            {/* Schedule Date & Recurring Options */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              <div>
+                <label id="lbl-transfer-schedule-date" data-testid="lbl-transfer-schedule-date" htmlFor="input-transfer-schedule-date" className="block text-xs font-bold text-slate-700 mb-1">
+                  Schedule Execution Date
+                </label>
+                <input
+                  id="input-transfer-schedule-date"
+                  data-testid="input-transfer-schedule-date"
+                  name="scheduleDate"
+                  type="date"
+                  defaultValue={new Date().toISOString().split('T')[0]}
+                  className="w-full bg-slate-50 border border-slate-300 rounded p-2 text-xs font-mono text-slate-900 focus:outline-none focus:border-[#002D72]"
+                />
+              </div>
+
+              <div className="flex items-center pt-5">
+                <label className="flex items-center space-x-2 cursor-pointer text-xs font-bold text-slate-700">
+                  <input
+                    id="checkbox-recurring-transfer"
+                    data-testid="checkbox-recurring-transfer"
+                    name="isRecurring"
+                    type="checkbox"
+                    className="w-4 h-4 rounded text-[#002D72] focus:ring-0"
+                  />
+                  <span>Enable Monthly Recurring Schedule</span>
+                </label>
+              </div>
+            </div>
+
             {/* Amount & Memo */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
@@ -306,6 +402,32 @@ export const TransfersView: React.FC = () => {
                   className="w-full bg-slate-50 border border-slate-300 rounded p-2 text-xs text-slate-900 focus:outline-none focus:border-[#002D72]"
                 />
               </div>
+            </div>
+
+            {/* Embedded iFrame for Legal Terms & Authorization Agreement */}
+            <div className="space-y-1.5 pt-2">
+              <label id="lbl-wire-disclosure" data-testid="lbl-wire-disclosure" className="block text-[11px] font-bold text-slate-600">
+                Federal Wire & Regulation E Electronic Transfer Terms Disclosure:
+              </label>
+              <iframe
+                id="iframe-wire-disclosure-terms"
+                data-testid="iframe-wire-disclosure-terms"
+                title="Electronic Funds Transfer Disclosure"
+                srcDoc={`<!DOCTYPE html><html><body style="font-family:sans-serif;font-size:11px;color:#334155;margin:0;padding:8px;background:#f8fafc;"><strong>TestGrid Bank Electronic Funds Transfer Disclosure:</strong> By initiating this request, you authorize TestGrid Bank Demo to debit your selected source account. Wire transfers are final once processed through the Fedwire settlement ledger. International transfers are subject to FX currency conversion and intermediary bank fees. Rights under Regulation E apply to consumer account transactions.</body></html>`}
+                className="w-full h-20 border border-slate-300 rounded bg-slate-50"
+              />
+
+              <label className="flex items-center space-x-2 cursor-pointer text-xs font-bold text-slate-800 pt-1">
+                <input
+                  id="checkbox-transfer-terms-agreed"
+                  data-testid="checkbox-transfer-terms-agreed"
+                  type="checkbox"
+                  defaultChecked
+                  required
+                  className="w-4 h-4 rounded text-[#002D72] focus:ring-0"
+                />
+                <span>I have read the disclosure and authorize TestGrid Bank to execute this transfer.</span>
+              </label>
             </div>
 
             <button

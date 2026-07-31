@@ -118,6 +118,10 @@ export interface LoanApplication {
   purpose: string;
   annualIncome: number;
   status: 'SUBMITTED' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED' | 'DISBURSED';
+  stage?: 'APPLICATION_RECEIVED' | 'OCR_VERIFIED' | 'CREDIT_SCORE_CHECKED' | 'UNDERWRITING_RISK_SCORED' | 'APPROVED' | 'DISBURSED' | 'REJECTED';
+  creditScoreAtApp?: number;
+  dtiRatio?: number;
+  disbursedToAccountId?: string;
   appliedDate: string;
   documents: { name: string; size: string; type: string; uploadedAt: string }[];
   reviewerNotes?: string;

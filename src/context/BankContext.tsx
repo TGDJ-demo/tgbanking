@@ -27,6 +27,7 @@ import {
   DEFAULT_CHAOS_FLAGS,
   generateSeedTransactions,
   generateSeedAuditLogs,
+  PERSONA_DATASETS,
 } from '../mockData';
 
 interface Toast {
@@ -52,10 +53,13 @@ interface BankContextType {
   toasts: Toast[];
   currentPersonaKey: string;
   activeView: string;
+  isAuthenticated: boolean;
 
   // Actions
   setActiveView: (view: string) => void;
   switchPersona: (personaKey: string) => void;
+  login: (personaKey?: string) => void;
+  logout: () => void;
   updateFeatureFlags: (flags: Partial<ChaosFeatureFlags>) => void;
   addToast: (toast: Omit<Toast, 'id'>) => void;
   removeToast: (id: string) => void;
@@ -66,13 +70,25 @@ interface BankContextType {
   addBeneficiary: (ben: Omit<Beneficiary, 'id'>) => void;
   createSupportTicket: (ticket: Partial<SupportTicket>) => void;
   updateLoanStatus: (loanId: string, status: LoanApplication['status'], notes?: string) => void;
+  advanceLoanStage: (loanId: string, nextStage: LoanApplication['stage'], notes?: string) => void;
+  disburseLoan: (loanId: string, targetAccountId: string) => void;
   markAllNotificationsRead: () => void;
   exportTransactions: (format: 'CSV' | 'JSON') => void;
+
+  // Custom Test Data Handlers
+  addCustomAccount: (acc: Partial<BankAccount>) => void;
+  addCustomTransaction: (tx: Partial<Transaction>) => void;
+  addCustomBeneficiary: (ben: Partial<Beneficiary>) => void;
+  addCustomBill: (bill: Partial<BillPayment>) => void;
+  addCustomLoan: (loan: Partial<LoanApplication>) => void;
+  importCustomData: (jsonStr: string) => boolean;
+  resetToDefaultData: () => void;
 }
 
 const BankContext = createContext<BankContextType | undefined>(undefined);
 
 export const BankProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
   const [currentPersonaKey, setCurrentPersonaKey] = useState<string>('customer');
   const [currentUser, setCurrentUser] = useState<UserProfile>(DEMO_PERSONAS.customer);
   const [accounts, setAccounts] = useState<BankAccount[]>(DEFAULT_ACCOUNTS);
@@ -113,6 +129,42 @@ export const BankProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [activeView, setActiveView] = useState<string>('dashboard');
 
+  const loadPersonaData = (personaKey: string) => {
+    const ds = PERSONA_DATASETS[personaKey] || PERSONA_DATASETS.customer;
+    if (ds) {
+      setAccounts(ds.accounts);
+      setTransactions(ds.transactions);
+      setLoans(ds.loans);
+      setCreditCards(ds.cards);
+      setInvestments(ds.investments);
+      setBeneficiaries(ds.beneficiaries);
+      setBills(ds.bills);
+    }
+  };
+
+  const login = (personaKey?: string) => {
+    const key = personaKey && DEMO_PERSONAS[personaKey] ? personaKey : 'customer';
+    setCurrentPersonaKey(key);
+    setCurrentUser(DEMO_PERSONAS[key]);
+    loadPersonaData(key);
+    setIsAuthenticated(true);
+    setActiveView('dashboard');
+    addToast({
+      type: 'success',
+      title: 'Welcome Back',
+      message: `Signed in as ${DEMO_PERSONAS[key].name} (${DEMO_PERSONAS[key].role})`,
+    });
+  };
+
+  const logout = () => {
+    setIsAuthenticated(false);
+    addToast({
+      type: 'info',
+      title: 'Signed Out',
+      message: 'You have been logged out of TestGrid Bank Demo session.',
+    });
+  };
+
   const addToast = (toast: Omit<Toast, 'id'>) => {
     const id = `toast_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
     const newToast = { ...toast, id };
@@ -130,6 +182,8 @@ export const BankProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (DEMO_PERSONAS[personaKey]) {
       setCurrentPersonaKey(personaKey);
       setCurrentUser(DEMO_PERSONAS[personaKey]);
+      loadPersonaData(personaKey);
+      setActiveView('dashboard');
       addToast({
         type: 'info',
         title: 'Persona Switch',
@@ -450,6 +504,203 @@ export const BankProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const advanceLoanStage = (loanId: string, nextStage: LoanApplication['stage'], notes?: string) => {
+    setLoans((prev) =>
+      prev.map((l) => {
+        if (l.id === loanId) {
+          const updatedStatus = nextStage === 'APPROVED' ? 'APPROVED' : nextStage === 'DISBURSED' ? 'DISBURSED' : nextStage === 'REJECTED' ? 'REJECTED' : 'UNDER_REVIEW';
+          return {
+            ...l,
+            stage: nextStage,
+            status: updatedStatus,
+            reviewerNotes: notes || l.reviewerNotes,
+          };
+        }
+        return l;
+      })
+    );
+    addToast({
+      type: 'success',
+      title: 'Loan Processing Advanced',
+      message: `Application moved to stage: ${nextStage}`,
+    });
+  };
+
+  const disburseLoan = (loanId: string, targetAccountId: string) => {
+    const loan = loans.find((l) => l.id === loanId);
+    if (!loan) return;
+
+    // Credit target account balance
+    setAccounts((prev) =>
+      prev.map((acc) => {
+        if (acc.id === targetAccountId) {
+          return {
+            ...acc,
+            balance: acc.balance + loan.requestedAmount,
+            availableBalance: acc.availableBalance + loan.requestedAmount,
+          };
+        }
+        return acc;
+      })
+    );
+
+    // Record credit transaction
+    const targetAcc = accounts.find((a) => a.id === targetAccountId);
+    const refNum = `WTB-DISBURSED-${Math.floor(100000 + Math.random() * 900000)}`;
+    const newTx: Transaction = {
+      id: `tx_loan_disburse_${Date.now()}`,
+      accountId: targetAccountId,
+      accountName: targetAcc?.name || 'Bank Account',
+      date: new Date().toISOString().replace('T', ' ').substring(0, 19),
+      merchant: `Loan Disbursement - ${loan.loanType} Financing`,
+      category: 'Transfer',
+      amount: loan.requestedAmount,
+      status: 'COMPLETED',
+      description: `Disbursed loan funds ref ${refNum} into ${targetAcc?.name}.`,
+      merchantLogo: '🏦',
+      referenceNumber: refNum,
+      channel: 'ACH',
+    };
+    setTransactions((prev) => [newTx, ...prev]);
+
+    // Update loan status
+    setLoans((prev) =>
+      prev.map((l) =>
+        l.id === loanId
+          ? { ...l, status: 'DISBURSED', stage: 'DISBURSED', disbursedToAccountId: targetAccountId }
+          : l
+      )
+    );
+
+    addToast({
+      type: 'success',
+      title: 'Loan Disbursed!',
+      message: `$${loan.requestedAmount.toLocaleString()} credited to ${targetAcc?.name || 'account'}.`,
+    });
+  };
+
+  const addCustomAccount = (acc: Partial<BankAccount>) => {
+    const newAcc: BankAccount = {
+      id: `acc_custom_${Date.now()}`,
+      accountNumber: acc.accountNumber || `${Math.floor(1000000000 + Math.random() * 9000000000)}`,
+      routingNumber: acc.routingNumber || '121000358',
+      accountType: acc.accountType || 'CHECKING',
+      name: acc.name || 'Custom Test Account',
+      balance: acc.balance ?? 1000,
+      availableBalance: acc.availableBalance ?? acc.balance ?? 1000,
+      currency: acc.currency || 'USD',
+      iban: acc.iban || `US89121000358${Math.floor(1000000000 + Math.random() * 9000000000)}`,
+      interestRate: acc.interestRate ?? 0.1,
+      status: 'ACTIVE',
+      lastUpdated: new Date().toISOString(),
+    };
+    setAccounts((prev) => [newAcc, ...prev]);
+    addToast({ type: 'success', title: 'Test Account Created', message: `Added ${newAcc.name} ($${newAcc.balance.toLocaleString()})` });
+  };
+
+  const addCustomTransaction = (tx: Partial<Transaction>) => {
+    const acc = accounts.find((a) => a.id === tx.accountId) || accounts[0];
+    const newTx: Transaction = {
+      id: `tx_custom_${Date.now()}`,
+      accountId: acc?.id || 'acc_chk_101',
+      accountName: acc?.name || 'Checking Account',
+      date: tx.date || new Date().toISOString().replace('T', ' ').substring(0, 19),
+      merchant: tx.merchant || 'Custom Test Merchant',
+      category: tx.category || 'Shopping',
+      amount: tx.amount ?? -50,
+      status: tx.status || 'COMPLETED',
+      description: tx.description || 'Manual custom test transaction entry',
+      merchantLogo: tx.merchantLogo || '💳',
+      referenceNumber: `WTB-TEST-${Math.floor(100000 + Math.random() * 900000)}`,
+      channel: tx.channel || 'ONLINE',
+    };
+    setTransactions((prev) => [newTx, ...prev]);
+
+    if (acc) {
+      setAccounts((prev) =>
+        prev.map((a) => (a.id === acc.id ? { ...a, balance: a.balance + newTx.amount, availableBalance: a.availableBalance + newTx.amount } : a))
+      );
+    }
+
+    addToast({ type: 'success', title: 'Test Transaction Added', message: `Recorded ${newTx.merchant} (${newTx.amount >= 0 ? '+' : ''}$${newTx.amount})` });
+  };
+
+  const addCustomBeneficiary = (ben: Partial<Beneficiary>) => {
+    const newBen: Beneficiary = {
+      id: `ben_custom_${Date.now()}`,
+      name: ben.name || 'Custom Test Beneficiary',
+      bankName: ben.bankName || 'Test National Bank',
+      accountNumber: ben.accountNumber || '9988776655',
+      routingNumber: ben.routingNumber || '121000358',
+      nickname: ben.nickname || ben.name || 'Custom Beneficiary',
+      email: ben.email || 'test.beneficiary@example.com',
+      type: ben.type || 'DOMESTIC_ACH',
+    };
+    setBeneficiaries((prev) => [...prev, newBen]);
+    addToast({ type: 'success', title: 'Beneficiary Added', message: `Added ${newBen.name}` });
+  };
+
+  const addCustomBill = (bill: Partial<BillPayment>) => {
+    const newBill: BillPayment = {
+      id: `bill_custom_${Date.now()}`,
+      billerName: bill.billerName || 'Custom Utility Biller',
+      billerCategory: bill.billerCategory || 'Electricity',
+      accountNumber: bill.accountNumber || 'UTIL-9901',
+      amountDue: bill.amountDue ?? 100,
+      dueDate: bill.dueDate || '2026-08-30',
+      status: bill.status || 'UNPAID',
+    };
+    setBills((prev) => [...prev, newBill]);
+    addToast({ type: 'success', title: 'Bill Created', message: `Created bill for ${newBill.billerName} ($${newBill.amountDue})` });
+  };
+
+  const addCustomLoan = (loan: Partial<LoanApplication>) => {
+    const newLoan: LoanApplication = {
+      id: `loan_custom_${Date.now()}`,
+      userId: currentUser.id,
+      applicantName: currentUser.name,
+      loanType: loan.loanType || 'PERSONAL',
+      requestedAmount: loan.requestedAmount || 20000,
+      termMonths: loan.termMonths || 36,
+      estimatedInterestRate: loan.estimatedInterestRate || 6.5,
+      monthlyPayment: loan.monthlyPayment || 613,
+      purpose: loan.purpose || 'Custom Test Loan Application',
+      annualIncome: loan.annualIncome || 120000,
+      status: loan.status || 'UNDER_REVIEW',
+      stage: loan.stage || 'APPLICATION_RECEIVED',
+      appliedDate: new Date().toISOString().split('T')[0],
+      documents: loan.documents || [{ name: 'Income_Proof.pdf', size: '500 KB', type: 'application/pdf', uploadedAt: new Date().toISOString().split('T')[0] }],
+      reviewerNotes: loan.reviewerNotes || 'Custom user testing loan entry',
+    };
+    setLoans((prev) => [newLoan, ...prev]);
+    addToast({ type: 'success', title: 'Test Loan Created', message: `Created ${newLoan.loanType} loan for $${newLoan.requestedAmount}` });
+  };
+
+  const importCustomData = (jsonStr: string): boolean => {
+    try {
+      const parsed = JSON.parse(jsonStr);
+      if (parsed.accounts) setAccounts(parsed.accounts);
+      if (parsed.transactions) setTransactions(parsed.transactions);
+      if (parsed.beneficiaries) setBeneficiaries(parsed.beneficiaries);
+      if (parsed.bills) setBills(parsed.bills);
+      if (parsed.loans) setLoans(parsed.loans);
+      addToast({ type: 'success', title: 'Data Import Successful', message: 'Custom test JSON dataset loaded into application state.' });
+      return true;
+    } catch (err) {
+      addToast({ type: 'error', title: 'Data Import Failed', message: 'Invalid JSON payload structure provided.' });
+      return false;
+    }
+  };
+
+  const resetToDefaultData = () => {
+    setAccounts(DEFAULT_ACCOUNTS);
+    setTransactions(generateSeedTransactions(120));
+    setBeneficiaries(DEFAULT_BENEFICIARIES);
+    setBills(DEFAULT_BILLS);
+    setLoans(DEFAULT_LOANS);
+    addToast({ type: 'info', title: 'Data Reset', message: 'Restored system to initial enterprise seed dataset.' });
+  };
+
   return (
     <BankContext.Provider
       value={{
@@ -468,8 +719,11 @@ export const BankProvider: React.FC<{ children: React.ReactNode }> = ({ children
         toasts,
         currentPersonaKey,
         activeView,
+        isAuthenticated,
         setActiveView,
         switchPersona,
+        login,
+        logout,
         updateFeatureFlags,
         addToast,
         removeToast,
@@ -480,8 +734,17 @@ export const BankProvider: React.FC<{ children: React.ReactNode }> = ({ children
         addBeneficiary,
         createSupportTicket,
         updateLoanStatus,
+        advanceLoanStage,
+        disburseLoan,
         markAllNotificationsRead,
         exportTransactions,
+        addCustomAccount,
+        addCustomTransaction,
+        addCustomBeneficiary,
+        addCustomBill,
+        addCustomLoan,
+        importCustomData,
+        resetToDefaultData,
       }}
     >
       {children}

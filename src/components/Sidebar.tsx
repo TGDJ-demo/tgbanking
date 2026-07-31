@@ -13,16 +13,19 @@ import {
   HelpCircle,
   ShieldAlert,
   Code,
-  FileCode2,
 } from 'lucide-react';
 
 interface SidebarProps {
-  activeView: string;
-  setActiveView: (view: string) => void;
+  isOpen?: boolean;
+  onClose?: () => void;
+  activeView?: string;
+  setActiveView?: (view: string) => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView }) => {
-  const { currentUser, featureFlags } = useBank();
+export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, activeView: propActiveView, setActiveView: propSetActiveView }) => {
+  const { currentUser, featureFlags, activeView: contextActiveView, setActiveView: contextSetActiveView } = useBank();
+  const activeView = propActiveView ?? contextActiveView;
+  const setActiveView = propSetActiveView ?? contextSetActiveView;
   const hasA11yDefects = featureFlags.accessibilityDefects;
 
   const navItems = [
@@ -38,7 +41,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView }) =
     { id: 'support', label: 'Support & Help', icon: HelpCircle, testId: 'nav-item-support' },
     { id: 'admin', label: 'Admin & Chaos Portal', icon: ShieldAlert, testId: 'nav-item-admin', highlight: true },
     { id: 'swagger', label: 'REST APIs / Swagger', icon: Code, testId: 'nav-item-swagger' },
-    { id: 'selenium-docs', label: 'Automation & Docker', icon: FileCode2, testId: 'nav-item-selenium-docs' },
   ];
 
   return (

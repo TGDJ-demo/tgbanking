@@ -151,6 +151,63 @@ export const BillPayView: React.FC = () => {
                 </select>
               </div>
 
+              {/* Payment Timing Radio Selection */}
+              <div>
+                <label id="lbl-bill-pay-option" data-testid="lbl-bill-pay-option" className="block text-xs font-bold text-slate-700 mb-1">
+                  Payment Processing Mode
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <label
+                    id="lbl-radio-pay-immediate"
+                    data-testid="lbl-radio-pay-immediate"
+                    className="p-2 bg-slate-50 border border-slate-300 rounded cursor-pointer flex items-center space-x-2 text-xs hover:bg-slate-100"
+                  >
+                    <input
+                      id="radio-pay-immediate"
+                      data-testid="radio-pay-immediate"
+                      type="radio"
+                      name="bill-pay-timing"
+                      value="IMMEDIATE"
+                      defaultChecked
+                      className="text-[#002D72]"
+                    />
+                    <span className="font-medium text-slate-800">Immediate ACH</span>
+                  </label>
+
+                  <label
+                    id="lbl-radio-pay-scheduled"
+                    data-testid="lbl-radio-pay-scheduled"
+                    className="p-2 bg-slate-50 border border-slate-300 rounded cursor-pointer flex items-center space-x-2 text-xs hover:bg-slate-100"
+                  >
+                    <input
+                      id="radio-pay-scheduled"
+                      data-testid="radio-pay-scheduled"
+                      type="radio"
+                      name="bill-pay-timing"
+                      value="DUE_DATE"
+                      className="text-[#002D72]"
+                    />
+                    <span className="font-medium text-slate-800">On Due Date</span>
+                  </label>
+
+                  <label
+                    id="lbl-radio-pay-autopay"
+                    data-testid="lbl-radio-pay-autopay"
+                    className="p-2 bg-slate-50 border border-slate-300 rounded cursor-pointer flex items-center space-x-2 text-xs hover:bg-slate-100"
+                  >
+                    <input
+                      id="radio-pay-autopay"
+                      data-testid="radio-pay-autopay"
+                      type="radio"
+                      name="bill-pay-timing"
+                      value="AUTOPAY"
+                      className="text-[#002D72]"
+                    />
+                    <span className="font-medium text-slate-800">AutoPay Monthly</span>
+                  </label>
+                </div>
+              </div>
+
               <div>
                 <label id="lbl-bill-amount" data-testid="lbl-bill-amount" htmlFor="input-bill-amount" className="block text-xs font-bold text-slate-700 mb-1">
                   Payment Amount ($ USD)
@@ -176,6 +233,44 @@ export const BillPayView: React.FC = () => {
                 <div className="flex justify-between">
                   <span className="font-medium text-slate-600">Last Payment Amount:</span>
                   <span className="font-mono font-bold text-slate-900">${selectedBill.lastPaymentAmount?.toFixed(2) || '0.00'}</span>
+                </div>
+              </div>
+
+              {/* Electronic Check Authorization iFrame & Checkboxes */}
+              <div className="space-y-1.5 pt-1">
+                <label id="lbl-bill-disclosure" data-testid="lbl-bill-disclosure" className="block text-[11px] font-bold text-slate-600">
+                  Electronic Check 21 & ACH Authorization Disclosure:
+                </label>
+                <iframe
+                  id="iframe-bill-echeck-authorization"
+                  data-testid="iframe-bill-echeck-authorization"
+                  title="ACH Electronic Check Authorization"
+                  srcDoc={`<!DOCTYPE html><html><body style="font-family:sans-serif;font-size:11px;color:#334155;margin:0;padding:8px;background:#f8fafc;"><strong>Electronic Check Payment Terms:</strong> By clicking Submit Payment, you authorize TestGrid Bank Demo to convert your transaction into an electronic fund transfer (EFT) or paper draft drawn on your selected deposit account. Funds may be withdrawn from your account as early as the same day.</body></html>`}
+                  className="w-full h-16 border border-slate-300 rounded bg-slate-50"
+                />
+
+                <div className="space-y-1 pt-1">
+                  <label className="flex items-center space-x-2 cursor-pointer text-xs font-medium text-slate-800">
+                    <input
+                      id="checkbox-send-receipt-email"
+                      data-testid="checkbox-send-receipt-email"
+                      type="checkbox"
+                      defaultChecked
+                      className="w-4 h-4 rounded text-[#002D72] focus:ring-0"
+                    />
+                    <span>Email electronic payment confirmation receipt to account holder.</span>
+                  </label>
+
+                  <label className="flex items-center space-x-2 cursor-pointer text-xs font-medium text-slate-800">
+                    <input
+                      id="checkbox-bill-due-reminder"
+                      data-testid="checkbox-bill-due-reminder"
+                      type="checkbox"
+                      defaultChecked
+                      className="w-4 h-4 rounded text-[#002D72] focus:ring-0"
+                    />
+                    <span>Send SMS alert 3 days prior to next bill due date.</span>
+                  </label>
                 </div>
               </div>
 

@@ -91,7 +91,7 @@ export const DashboardView: React.FC = () => {
             </span>
           </div>
           <p id="subtext-last-login" data-testid="subtext-last-login" className="text-xs text-blue-100 mt-0.5">
-            Last secure login: Today at 11:30 AM PST • IP: 192.168.1.102 • Western Trust Security Shield Active
+            Last secure login: Today at 11:30 AM PST • IP: 192.168.1.102 • TestGrid Security Shield Active
           </p>
         </div>
 

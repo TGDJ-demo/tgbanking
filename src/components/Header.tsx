@@ -12,11 +12,12 @@ import {
   Terminal,
   Activity,
   CheckCircle2,
+  Database,
 } from 'lucide-react';
 import { DEMO_PERSONAS } from '../mockData';
 
-export const Header: React.FC<{ onLogoutClick: () => void }> = ({ onLogoutClick }) => {
-  const { currentUser, switchPersona, currentPersonaKey, notifications, markAllNotificationsRead, featureFlags, setActiveView } = useBank();
+export const Header: React.FC<{ onToggleSidebar?: () => void; onOpenTestDataModal?: () => void }> = ({ onToggleSidebar, onOpenTestDataModal }) => {
+  const { currentUser, switchPersona, currentPersonaKey, notifications, markAllNotificationsRead, featureFlags, setActiveView, logout } = useBank();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotificationsMenu, setShowNotificationsMenu] = useState(false);
 
@@ -48,14 +49,14 @@ export const Header: React.FC<{ onLogoutClick: () => void }> = ({ onLogoutClick 
               data-testid="brand-title-text"
               className="text-lg font-bold tracking-tight text-white font-sans"
             >
-              WESTERN TRUST
+              TESTGRID BANK
             </span>
             <span
               id="brand-subtitle-badge"
               data-testid="brand-subtitle-badge"
               className="text-[10px] font-bold px-2 py-0.5 bg-blue-900/80 text-blue-100 rounded border border-blue-400/30 uppercase tracking-wider"
             >
-              Enterprise Demo
+              Demo Platform
             </span>
           </div>
         </div>
@@ -82,6 +83,21 @@ export const Header: React.FC<{ onLogoutClick: () => void }> = ({ onLogoutClick 
             </button>
           )}
 
+          {/* Custom Test Data Injector Button */}
+          {onOpenTestDataModal && (
+            <button
+              id="btn-header-test-data"
+              data-testid="btn-header-test-data"
+              name="test-data-injector"
+              aria-label={hasA11yDefects ? undefined : 'Open Test Data Injector'}
+              onClick={onOpenTestDataModal}
+              className="flex items-center space-x-1.5 px-2.5 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-400/40 rounded text-xs font-bold transition cursor-pointer"
+            >
+              <Database className="w-3.5 h-3.5 text-amber-300" />
+              <span className="hidden sm:inline">Inject Test Data</span>
+            </button>
+          )}
+
           {/* Quick API Explorer / Swagger Link */}
           <button
             id="btn-header-swagger-link"
@@ -93,19 +109,6 @@ export const Header: React.FC<{ onLogoutClick: () => void }> = ({ onLogoutClick 
           >
             <Code2 className="w-3.5 h-3.5 text-emerald-300" />
             <span className="hidden md:inline">REST APIs</span>
-          </button>
-
-          {/* Selenium Docs Quick Link */}
-          <button
-            id="btn-header-selenium-docs-link"
-            data-testid="btn-header-selenium-docs-link"
-            name="selenium-docs-quick-link"
-            aria-label={hasA11yDefects ? undefined : 'Open Selenium Test Automation Documentation'}
-            onClick={() => setActiveView('selenium-docs')}
-            className="flex items-center space-x-1.5 px-2.5 py-1 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded text-xs font-medium transition cursor-pointer"
-          >
-            <Terminal className="w-3.5 h-3.5 text-blue-200" />
-            <span className="hidden md:inline">Automation Hub</span>
           </button>
 
           {/* Notifications Bell */}
@@ -258,7 +261,7 @@ export const Header: React.FC<{ onLogoutClick: () => void }> = ({ onLogoutClick 
                     data-testid="btn-user-logout"
                     onClick={() => {
                       setShowUserMenu(false);
-                      onLogoutClick();
+                      logout();
                     }}
                     className="w-full flex items-center space-x-2 p-2 text-xs font-medium text-red-600 hover:bg-red-50 rounded cursor-pointer"
                   >

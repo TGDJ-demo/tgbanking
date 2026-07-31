@@ -3,6 +3,7 @@ import { BankProvider, useBank } from './context/BankContext';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import { LoginModal } from './components/LoginModal';
+import { CustomTestDataModal } from './components/CustomTestDataModal';
 import { ToastContainer } from './components/ToastContainer';
 
 import { DashboardView } from './views/DashboardView';
@@ -17,40 +18,38 @@ import { CustomerProfileView } from './views/CustomerProfileView';
 import { SupportView } from './views/SupportView';
 import { AdminPortalView } from './views/AdminPortalView';
 import { ApiSwaggerView } from './views/ApiSwaggerView';
-import { TestAutomationDocsView } from './views/TestAutomationDocsView';
 
 const MainAppContent: React.FC = () => {
-  const { currentView, isAuthenticated, featureFlags } = useBank();
+  const { activeView, isAuthenticated, featureFlags, login } = useBank();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [testDataModalOpen, setTestDataModalOpen] = useState(false);
 
   const renderActiveView = () => {
-    switch (currentView) {
-      case 'DASHBOARD':
+    switch (activeView?.toLowerCase()) {
+      case 'dashboard':
         return <DashboardView />;
-      case 'ACCOUNTS':
+      case 'accounts':
         return <AccountsView />;
-      case 'TRANSACTIONS':
+      case 'transactions':
         return <TransactionsView />;
-      case 'TRANSFERS':
+      case 'transfers':
         return <TransfersView />;
-      case 'BILLPAY':
+      case 'billpay':
         return <BillPayView />;
-      case 'LOANS':
+      case 'loans':
         return <LoansView />;
-      case 'CARDS':
+      case 'cards':
         return <CardsView />;
-      case 'INVESTMENTS':
+      case 'investments':
         return <InvestmentsView />;
-      case 'PROFILE':
+      case 'profile':
         return <CustomerProfileView />;
-      case 'SUPPORT':
+      case 'support':
         return <SupportView />;
-      case 'ADMIN':
+      case 'admin':
         return <AdminPortalView />;
-      case 'SWAGGER':
+      case 'swagger':
         return <ApiSwaggerView />;
-      case 'SELENIUM_DOCS':
-        return <TestAutomationDocsView />;
       default:
         return <DashboardView />;
     }
@@ -65,7 +64,10 @@ const MainAppContent: React.FC = () => {
       }`}
     >
       {/* Top Header Navigation */}
-      <Header onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+      <Header
+        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+        onOpenTestDataModal={() => setTestDataModalOpen(true)}
+      />
 
       {/* Main Container Layout */}
       <div className="flex-1 flex max-w-[1600px] w-full mx-auto">
@@ -84,6 +86,9 @@ const MainAppContent: React.FC = () => {
 
       {/* Login & OTP Auth Modal */}
       {!isAuthenticated && <LoginModal />}
+
+      {/* Custom Test Data Injector Modal */}
+      <CustomTestDataModal isOpen={testDataModalOpen} onClose={() => setTestDataModalOpen(false)} />
 
       {/* Global Toast Notifications Engine */}
       <ToastContainer />

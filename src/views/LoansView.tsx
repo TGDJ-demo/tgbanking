@@ -4,7 +4,7 @@ import { Landmark, Calculator, Upload, CheckCircle2, Clock, XCircle, FileText, C
 import { LoanApplication } from '../types';
 
 export const LoansView: React.FC = () => {
-  const { loans, submitLoanApplication, currentUser, updateLoanStatus, addToast } = useBank();
+  const { loans, accounts, submitLoanApplication, currentUser, updateLoanStatus, advanceLoanStage, disburseLoan, addToast } = useBank();
 
   // Calculator State
   const [calcAmount, setCalcAmount] = useState<number>(25000);
@@ -160,7 +160,7 @@ export const LoansView: React.FC = () => {
           <div id="form-loan-origination" data-testid="form-loan-origination" className="bg-white border border-slate-200 rounded-lg p-5 shadow-sm space-y-3">
             <h3 className="text-sm font-bold text-slate-900 flex items-center space-x-1.5">
               <Landmark className="w-4 h-4 text-[#002D72]" />
-              <span>Apply for Western Trust Financing</span>
+              <span>Apply for TestGrid Bank Financing</span>
             </h3>
 
             <form onSubmit={handleLoanSubmit} className="space-y-3">
@@ -193,6 +193,63 @@ export const LoansView: React.FC = () => {
                     className="w-full bg-slate-50 border border-slate-300 rounded p-1.5 text-xs font-mono font-bold text-slate-900 focus:outline-none focus:border-[#002D72]"
                     required
                   />
+                </div>
+              </div>
+
+              {/* Employment Status Radio Buttons */}
+              <div>
+                <label id="lbl-employment-status" data-testid="lbl-employment-status" className="block text-xs font-bold text-slate-700 mb-1">
+                  Primary Employment Classification
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <label
+                    id="lbl-radio-emp-w2"
+                    data-testid="lbl-radio-emp-w2"
+                    className="p-2 bg-slate-50 border border-slate-300 rounded cursor-pointer flex items-center space-x-2 text-xs hover:bg-slate-100"
+                  >
+                    <input
+                      id="radio-emp-w2"
+                      data-testid="radio-emp-w2"
+                      type="radio"
+                      name="emp-status"
+                      value="W2_FULLTIME"
+                      defaultChecked
+                      className="text-[#002D72]"
+                    />
+                    <span className="font-medium text-slate-800">W-2 Full Time</span>
+                  </label>
+
+                  <label
+                    id="lbl-radio-emp-1099"
+                    data-testid="lbl-radio-emp-1099"
+                    className="p-2 bg-slate-50 border border-slate-300 rounded cursor-pointer flex items-center space-x-2 text-xs hover:bg-slate-100"
+                  >
+                    <input
+                      id="radio-emp-1099"
+                      data-testid="radio-emp-1099"
+                      type="radio"
+                      name="emp-status"
+                      value="1099_SELF"
+                      className="text-[#002D72]"
+                    />
+                    <span className="font-medium text-slate-800">1099 Contractor</span>
+                  </label>
+
+                  <label
+                    id="lbl-radio-emp-retired"
+                    data-testid="lbl-radio-emp-retired"
+                    className="p-2 bg-slate-50 border border-slate-300 rounded cursor-pointer flex items-center space-x-2 text-xs hover:bg-slate-100"
+                  >
+                    <input
+                      id="radio-emp-retired"
+                      data-testid="radio-emp-retired"
+                      type="radio"
+                      name="emp-status"
+                      value="RETIRED"
+                      className="text-[#002D72]"
+                    />
+                    <span className="font-medium text-slate-800">Retired / Other</span>
+                  </label>
                 </div>
               </div>
 
@@ -269,6 +326,45 @@ export const LoansView: React.FC = () => {
                 </div>
               </div>
 
+              {/* Truth-in-Lending Disclosure iFrame & Checkboxes */}
+              <div className="space-y-1.5 pt-1">
+                <label id="lbl-loan-disclosure" data-testid="lbl-loan-disclosure" className="block text-[11px] font-bold text-slate-600">
+                  Truth in Lending Act (TILA) & Credit Authorization Disclosure:
+                </label>
+                <iframe
+                  id="iframe-loan-disclosure-terms"
+                  data-testid="iframe-loan-disclosure-terms"
+                  title="Truth in Lending Disclosure"
+                  srcDoc={`<!DOCTYPE html><html><body style="font-family:sans-serif;font-size:11px;color:#334155;margin:0;padding:8px;background:#f8fafc;"><strong>TestGrid Bank TILA Disclosures:</strong> Federal law requires full disclosure of loan interest rates, finance charges, and total loan payback amounts. By submitting this application, you authorize TestGrid Bank Demo to perform a hard credit inquiry with Equifax, Experian, or TransUnion. Late payments or default may be reported to consumer reporting agencies.</body></html>`}
+                  className="w-full h-20 border border-slate-300 rounded bg-slate-50"
+                />
+
+                <div className="space-y-1 pt-1">
+                  <label className="flex items-center space-x-2 cursor-pointer text-xs font-medium text-slate-800">
+                    <input
+                      id="checkbox-loan-credit-check"
+                      data-testid="checkbox-loan-credit-check"
+                      type="checkbox"
+                      defaultChecked
+                      required
+                      className="w-4 h-4 rounded text-[#002D72] focus:ring-0"
+                    />
+                    <span>I authorize TestGrid Bank to obtain my credit bureau history report.</span>
+                  </label>
+
+                  <label className="flex items-center space-x-2 cursor-pointer text-xs font-medium text-slate-800">
+                    <input
+                      id="checkbox-loan-autopay"
+                      data-testid="checkbox-loan-autopay"
+                      type="checkbox"
+                      defaultChecked
+                      className="w-4 h-4 rounded text-[#002D72] focus:ring-0"
+                    />
+                    <span>Opt-in for automatic monthly ACH repayment (0.25% APR Discount applied).</span>
+                  </label>
+                </div>
+              </div>
+
               <button
                 id="btn-submit-loan-app"
                 data-testid="btn-submit-loan-app"
@@ -324,6 +420,91 @@ export const LoansView: React.FC = () => {
                     <span className="font-bold text-[#002D72]">Underwriter:</span> {app.reviewerNotes}
                   </p>
                 )}
+
+                {/* Loan Processing Pipeline Stage Controls */}
+                <div className="pt-2 border-t border-slate-100 space-y-2">
+                  <div className="flex items-center justify-between text-[10px] text-slate-600 font-bold">
+                    <span>Workflow Stage:</span>
+                    <span className="text-[#002D72] uppercase font-extrabold">{app.stage || app.status}</span>
+                  </div>
+
+                  {/* Advance Stage Buttons for Loan Officers & Admins */}
+                  {(currentUser.role === 'LOAN_OFFICER' || currentUser.role === 'ADMIN' || currentUser.role === 'CUSTOMER') && (
+                    <div className="space-y-1.5 pt-1">
+                      {(!app.stage || app.stage === 'APPLICATION_RECEIVED') && (
+                        <button
+                          id={`btn-ocr-verify-${app.id}`}
+                          data-testid={`btn-ocr-verify-${app.id}`}
+                          onClick={() => {
+                            advanceLoanStage(app.id, 'DOCUMENT_OCR_VERIFIED', 'OCR extracted W2 income $145,000 matches application.');
+                          }}
+                          className="w-full py-1 bg-blue-50 hover:bg-blue-100 text-[#002D72] border border-blue-300 font-bold text-[10px] rounded cursor-pointer transition flex items-center justify-center space-x-1"
+                        >
+                          <FileText className="w-3 h-3" />
+                          <span>1. Run Document OCR Verification</span>
+                        </button>
+                      )}
+
+                      {app.stage === 'DOCUMENT_OCR_VERIFIED' && (
+                        <button
+                          id={`btn-credit-check-${app.id}`}
+                          data-testid={`btn-credit-check-${app.id}`}
+                          onClick={() => {
+                            advanceLoanStage(app.id, 'CREDIT_SCORE_CHECKED', 'Bureau pull confirmed FICO credit score 785.');
+                          }}
+                          className="w-full py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-300 font-bold text-[10px] rounded cursor-pointer transition flex items-center justify-center space-x-1"
+                        >
+                          <CheckCircle2 className="w-3 h-3 text-indigo-700" />
+                          <span>2. Perform Credit & Risk Scoring</span>
+                        </button>
+                      )}
+
+                      {app.stage === 'CREDIT_SCORE_CHECKED' && (
+                        <button
+                          id={`btn-[#underwrite-${app.id}`}
+                          data-testid={`btn-underwrite-${app.id}`}
+                          onClick={() => {
+                            advanceLoanStage(app.id, 'UNDERWRITING_APPROVED', 'Underwriter approved loan term and rate.');
+                          }}
+                          className="w-full py-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold text-[10px] rounded cursor-pointer transition flex items-center justify-center space-x-1"
+                        >
+                          <Clock className="w-3 h-3 text-amber-700" />
+                          <span>3. Underwriting Committee Approval</span>
+                        </button>
+                      )}
+
+                      {(app.stage === 'UNDERWRITING_APPROVED' || app.status === 'APPROVED') && app.status !== 'DISBURSED' && (
+                        <div className="p-2 bg-emerald-50 border border-emerald-200 rounded space-y-1.5">
+                          <span className="text-[10px] font-bold text-emerald-900 block">4. Disburse Loan Funds into Account</span>
+                          <select
+                            id={`select-disburse-account-${app.id}`}
+                            data-testid={`select-disburse-account-${app.id}`}
+                            defaultValue={accounts[0]?.id}
+                            onChange={(e) => {
+                              const targetId = e.target.value;
+                              disburseLoan(app.id, targetId);
+                            }}
+                            className="w-full bg-white border border-emerald-300 rounded p-1 text-[10px] font-bold text-slate-800"
+                          >
+                            <option value="">Select Account for Disbursal...</option>
+                            {accounts.map((acc) => (
+                              <option key={acc.id} value={acc.id}>
+                                {acc.name} (${acc.balance.toLocaleString()})
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+
+                      {app.status === 'DISBURSED' && (
+                        <div className="text-[10px] font-bold text-emerald-700 bg-emerald-50 p-1.5 rounded border border-emerald-200 text-center flex items-center justify-center space-x-1">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                          <span>Disbursed to Checking Account</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
 
                 {/* Loan Officer Controls (if user is LOAN_OFFICER or ADMIN) */}
                 {(currentUser.role === 'LOAN_OFFICER' || currentUser.role === 'ADMIN') && app.status === 'UNDER_REVIEW' && (
