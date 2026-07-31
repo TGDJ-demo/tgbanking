@@ -143,6 +143,8 @@ export interface CreditCardDetails {
   minPaymentDue: number;
   paymentDueDate: string;
   virtualCardNumber?: string;
+  lastPaymentDate?: string;
+  lastPaymentAmount?: number;
 }
 
 export interface InvestmentAsset {

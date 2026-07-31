@@ -70,9 +70,32 @@ const MainAppContent: React.FC = () => {
       />
 
       {/* Main Container Layout */}
-      <div className="flex-1 flex max-w-[1600px] w-full mx-auto">
-        {/* Left Sidebar */}
-        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <div className="flex-1 flex max-w-[1600px] w-full mx-auto relative">
+        {/* Desktop Sidebar */}
+        <div className="hidden lg:block shrink-0">
+          <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        </div>
+
+        {/* Mobile Sidebar Overlay Drawer */}
+        {sidebarOpen && (
+          <div className="fixed inset-0 z-50 lg:hidden flex">
+            {/* Dark Backdrop */}
+            <div
+              className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
+              onClick={() => setSidebarOpen(false)}
+            />
+            {/* Drawer */}
+            <div className="relative z-10 w-64 max-w-[80%] bg-slate-50 h-full shadow-2xl flex flex-col">
+              <Sidebar
+                isOpen={true}
+                onClose={() => setSidebarOpen(false)}
+                setActiveView={(view) => {
+                  setSidebarOpen(false);
+                }}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Primary Page Content Canvas */}
         <main

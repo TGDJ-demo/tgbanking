@@ -95,6 +95,36 @@ async function startServer() {
     res.json({ status: 'SUCCESS', isFrozen: true, message: 'Card successfully frozen.' });
   });
 
+  app.post('/api/payments', (req, res) => {
+    res.json({
+      status: 'SUCCESS',
+      paymentId: `pay_${Date.now()}`,
+      billerName: req.body?.billerName || 'Pacific Gas & Electric',
+      amountPaid: req.body?.amount || 245.50,
+      confirmationNumber: `CONF-${Math.floor(Math.random() * 900000 + 100000)}`,
+      timestamp: new Date().toISOString(),
+    });
+  });
+
+  app.get('/api/loans', (req, res) => {
+    res.json({
+      loans: [
+        { id: 'loan_app_101', loanType: 'HOME_EQUITY', requestedAmount: 250000, status: 'APPROVED', stage: 'APPROVED', APR: '5.85%' },
+        { id: 'loan_app_102', loanType: 'COMMERCIAL_CREDIT', requestedAmount: 100000, status: 'SUBMITTED', stage: 'UNDERWRITING_RISK_SCORED', APR: '6.20%' },
+      ],
+    });
+  });
+
+  app.get('/api/admin/system', (req, res) => {
+    res.json({
+      systemStatus: 'ONLINE',
+      clusterNode: 'us-central1-wtb-prod-02',
+      uptimeSeconds: 849200,
+      databaseConnections: 24,
+      buildVersion: 'v2.5.0-ENTERPRISE-BUILD-992',
+    });
+  });
+
   app.get('/api/admin/feature-flags', (req, res) => {
     res.json({ featureFlags: mockFeatureFlags });
   });

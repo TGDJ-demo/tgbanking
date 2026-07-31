@@ -461,7 +461,7 @@ export const LoansView: React.FC = () => {
 
                       {app.stage === 'CREDIT_SCORE_CHECKED' && (
                         <button
-                          id={`btn-[#underwrite-${app.id}`}
+                          id={`btn-underwrite-${app.id}`}
                           data-testid={`btn-underwrite-${app.id}`}
                           onClick={() => {
                             advanceLoanStage(app.id, 'UNDERWRITING_APPROVED', 'Underwriter approved loan term and rate.');

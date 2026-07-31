@@ -65,6 +65,7 @@ interface BankContextType {
   removeToast: (id: string) => void;
   executeTransfer: (req: MoneyTransferRequest) => Promise<MoneyTransferResult>;
   payBill: (billId: string, accountId: string, amount: number) => Promise<boolean>;
+  payCreditCardBill: (cardId: string, sourceAccountId: string, amount: number) => Promise<boolean>;
   submitLoanApplication: (loan: Partial<LoanApplication>) => Promise<LoanApplication>;
   toggleFreezeCreditCard: (cardId: string) => void;
   addBeneficiary: (ben: Omit<Beneficiary, 'id'>) => void;
@@ -313,6 +314,69 @@ export const BankProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     return result;
+  };
+
+  const payCreditCardBill = async (cardId: string, sourceAccountId: string, amount: number): Promise<boolean> => {
+    await simulateDelay();
+    const sourceAcc = accounts.find((a) => a.id === sourceAccountId);
+    if (!sourceAcc || sourceAcc.availableBalance < amount) {
+      addToast({
+        type: 'error',
+        title: 'Payment Failed',
+        message: 'Insufficient balance in selected account to pay credit card bill.',
+      });
+      return false;
+    }
+
+    setAccounts((prev) =>
+      prev.map((a) => (a.id === sourceAccountId ? { ...a, balance: a.balance - amount, availableBalance: a.availableBalance - amount } : a))
+    );
+
+    setCreditCards((prev) =>
+      prev.map((card) => {
+        if (card.id === cardId) {
+          const newBalance = Math.max(0, card.currentBalance - amount);
+          const newAvailable = card.creditLimit - newBalance;
+          return {
+            ...card,
+            currentBalance: newBalance,
+            availableCredit: newAvailable,
+            lastPaymentAmount: amount,
+            lastPaymentDate: new Date().toISOString().split('T')[0],
+          };
+        }
+        return card;
+      })
+    );
+
+    const cardObj = creditCards.find((c) => c.id === cardId);
+    const refNum = `WTB-CCPAY-${Math.floor(10000000 + Math.random() * 90000000)}`;
+
+    setTransactions((prev) => [
+      {
+        id: `tx_${Date.now()}`,
+        accountId: sourceAccountId,
+        accountName: sourceAcc.name,
+        date: new Date().toISOString().replace('T', ' ').substring(0, 19),
+        merchant: `Credit Card Bill Payment (${cardObj?.cardType.replace('_', ' ') || 'Visa'})`,
+        category: 'Credit Card Payment',
+        amount: -amount,
+        status: 'COMPLETED',
+        description: `Statement payment for card ending in ${cardObj?.cardNumberMasked.slice(-4) || '4892'}. Ref: ${refNum}`,
+        merchantLogo: '💳',
+        referenceNumber: refNum,
+        channel: 'INTERNAL',
+      },
+      ...prev,
+    ]);
+
+    addToast({
+      type: 'success',
+      title: 'Credit Card Bill Paid',
+      message: `Payment of $${amount.toFixed(2)} applied to card ending in ${cardObj?.cardNumberMasked.slice(-4) || '4892'}.`,
+    });
+
+    return true;
   };
 
   const payBill = async (billId: string, accountId: string, amount: number): Promise<boolean> => {
@@ -729,6 +793,7 @@ export const BankProvider: React.FC<{ children: React.ReactNode }> = ({ children
         removeToast,
         executeTransfer,
         payBill,
+        payCreditCardBill,
         submitLoanApplication,
         toggleFreezeCreditCard,
         addBeneficiary,

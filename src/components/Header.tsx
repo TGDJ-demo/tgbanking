@@ -13,6 +13,7 @@ import {
   Activity,
   CheckCircle2,
   Database,
+  Menu,
 } from 'lucide-react';
 import { DEMO_PERSONAS } from '../mockData';
 
@@ -34,7 +35,19 @@ export const Header: React.FC<{ onToggleSidebar?: () => void; onOpenTestDataModa
     >
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
         {/* Brand Logo & Name */}
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2 sm:space-x-3">
+          {onToggleSidebar && (
+            <button
+              id="btn-mobile-sidebar-toggle"
+              data-testid="btn-mobile-sidebar-toggle"
+              onClick={onToggleSidebar}
+              className="lg:hidden p-1.5 bg-white/10 hover:bg-white/20 text-white rounded transition cursor-pointer"
+              aria-label="Toggle Sidebar Menu"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+          )}
+
           <div
             id="brand-logo-container"
             data-testid="brand-logo-container"
