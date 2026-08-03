@@ -143,7 +143,7 @@ export const DEFAULT_ACCOUNTS: BankAccount[] = [
     routingNumber: '121000358',
     accountType: 'CHECKING',
     name: 'Preferred Premier Checking',
-    balance: 2458000.45,
+    balance: 24580000000.45,
     availableBalance: 24080.45,
     currency: 'USD',
     iban: 'US891210003584892019381',
