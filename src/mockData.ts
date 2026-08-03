@@ -16,9 +16,9 @@ import {
 export const DEMO_PERSONAS: Record<string, UserProfile> = {
   customer: {
     id: 'usr_cust_101',
-    username: 'john.doe',
-    name: 'John Doe',
-    email: 'john.doe@testgridbank.com',
+    username: 'Sanjay.G',
+    name: 'Sanjay G',
+    email: 'Sanjay.G@testgridbank.com',
     phone: '+1 (555) 234-5678',
     role: 'CUSTOMER',
     avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
@@ -143,7 +143,7 @@ export const DEFAULT_ACCOUNTS: BankAccount[] = [
     routingNumber: '121000358',
     accountType: 'CHECKING',
     name: 'Preferred Premier Checking',
-    balance: 24580.45,
+    balance: 2458000.45,
     availableBalance: 24080.45,
     currency: 'USD',
     iban: 'US891210003584892019381',
@@ -157,7 +157,7 @@ export const DEFAULT_ACCOUNTS: BankAccount[] = [
     routingNumber: '121000358',
     accountType: 'SAVINGS',
     name: 'High-Yield Direct Savings',
-    balance: 85400.00,
+    balance: 8540000.00,
     availableBalance: 85400.00,
     currency: 'USD',
     iban: 'US891210003588839102948',
@@ -294,7 +294,7 @@ export const DEFAULT_LOANS: LoanApplication[] = [
   {
     id: 'loan_app_901',
     userId: 'usr_cust_101',
-    applicantName: 'John Doe',
+    applicantName: 'Sanjay G',
     loanType: 'HOME',
     requestedAmount: 350000,
     termMonths: 360,
@@ -313,7 +313,7 @@ export const DEFAULT_LOANS: LoanApplication[] = [
   {
     id: 'loan_app_902',
     userId: 'usr_cust_101',
-    applicantName: 'John Doe',
+    applicantName: 'Sanjay G',
     loanType: 'PERSONAL',
     requestedAmount: 15000,
     termMonths: 36,
@@ -334,7 +334,7 @@ export const DEFAULT_CREDIT_CARDS: CreditCardDetails[] = [
   {
     id: 'card_sig_001',
     cardNumberMasked: '•••• •••• •••• 4444',
-    cardHolderName: 'JOHN DOE',
+    cardHolderName: 'Sanjay G',
     expiryDate: '09/29',
     cardType: 'VISA_SIGNATURE',
     creditLimit: 20000,
